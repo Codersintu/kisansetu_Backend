@@ -1,0 +1,79 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  MobNumber BigInt   @unique
+  password  String
+  role      Role     @default(BUYER)
+  products  Product[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  vegetable   String
+  price       Int
+  quantity    Int
+  unit        Unit
+  img         String
+  isCompleted Boolean @default(false)
+
+  sellerId Int
+  seller   User @relation(fields: [sellerId], references: [id])
+
+  orderItems OrderItem[]
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  buyerId  Int
+  total    Int
+  status   OrderStatus @default(PLACED)
+  createdAt DateTime @default(now())
+
+  buyer User @relation(fields: [buyerId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  orderId  Int
+  productId Int
+  quantity Int
+  price    Int 
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+enum Role {
+  BUYER
+  SELLER
+}
+
+enum Unit {
+  kg
+  piece
+  dozen
+  litre
+}
+
+enum OrderStatus {
+  PENDING
+  PLACED
+  SHIPPED
+  CANCELLED
+  DELIVERED
+}
